@@ -21,7 +21,7 @@ sns.set_theme(style="whitegrid", palette="muted")
 
 def main():
     """Função principal que executa o aplicativo Streamlit."""
-    st.title("📊 Análise de Dados do Brasileirão (2014-2020)")
+    st.title("📊 Análise de Dados do Brasileirão (2013-2020)")
     st.markdown("Use as abas abaixo para explorar diferentes visões dos dados.")
     
     # Carrega os dados usando o componente

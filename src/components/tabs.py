@@ -38,13 +38,17 @@ def render_tab_tendencias(df):
 def render_tab_correlacoes(df):
     """Cria e exibe o conteúdo da Aba 2"""
     st.header("Matriz de Correlação")
-    st.markdown("Qual métrica tem maior impacto no **ranking** final?")
+    st.markdown("Qual métrica tem maior impacto na **colocação final**?")
 
     colunas_numericas = df.select_dtypes(include='number').drop(columns='Ano', errors='ignore')
     
-    if 'ranking' not in colunas_numericas.columns:
-        st.error("Coluna 'ranking' não encontrada. Não é possível gerar correlação.")
+    # --- [ALTERADO] ---
+    # Procura pela nova coluna 'colocacao_final'
+    if 'colocacao_final' not in colunas_numericas.columns:
+        st.error("Coluna 'colocacao_final' não encontrada. Não é possível gerar correlação.")
+        st.error("Verifique se o nome da coluna no seu CSV está correto.")
         return
+    # --- [FIM DA ALTERAÇÃO] ---
 
     corr_matrix = colunas_numericas.corr()
     
@@ -57,17 +61,18 @@ def render_tab_correlacoes(df):
     
     st.markdown("""
     **Como ler este gráfico:**
-    * **Correlação com `ranking`:**
-        * **Valor Negativo Forte (ex: -0.8):** EXCELENTE. (Mais métrica, melhor ranking)
-        * **Valor Positivo Forte (ex: +0.6):** PÉSSIMO. (Mais métrica, pior ranking)
+    * **Correlação com `colocacao_final`:**
+        * **Valor Negativo Forte (ex: -0.8):** EXCELENTE. (Mais métrica, melhor colocação)
+        * **Valor Positivo Forte (ex: +0.6):** PÉSSIMO. (Mais métrica, pior colocação)
     """)
 
     st.markdown("---")
-    st.header("Análise de Dispersão (Métrica vs. Ranking)")
+    # --- [ALTERADO] ---
+    st.header("Análise de Dispersão (Métrica vs. Colocação Final)")
     st.markdown("Veja visualmente a relação entre uma métrica e a posição final.")
 
     metrica_x = st.selectbox(
-        "Selecione a métrica (Eixo X) para comparar com o Ranking (Eixo Y):",
+        "Selecione a métrica (Eixo X) para comparar com a Colocação Final (Eixo Y):",
         options=COLUNAS_METRICAS,
         index=0, 
         format_func=formatar_nome,
@@ -79,15 +84,17 @@ def render_tab_correlacoes(df):
         fig_scatter = plt.figure(figsize=(10, 6))
         ax = fig_scatter.add_subplot(111)
         sns.regplot(
-            data=df, x=metrica_x, y='ranking', ax=ax,
+            data=df, x=metrica_x, y='colocacao_final', ax=ax, # Usa 'colocacao_final'
             line_kws={'color': 'red', 'linestyle': '--', 'lw': 2}, 
             scatter_kws={'alpha': 0.3} 
         )
         ax.invert_yaxis() 
-        ax.set_title(f'Relação entre {titulo_x} e Ranking Final', fontsize=16)
+        ax.set_title(f'Relação entre {titulo_x} e Colocação Final', fontsize=16)
         ax.set_xlabel(titulo_x)
-        ax.set_ylabel("Ranking Final (1 = Campeão)")
+        ax.set_ylabel("Colocação Final (1 = Campeão)") # Label atualizado
         st.pyplot(fig_scatter)
+    # --- [FIM DA ALTERAÇÃO] ---
+
 
 def render_tab_analise_time(df, df_medias_ano, anos_completos):
     """Cria e exibe o conteúdo da Aba 3"""
@@ -113,28 +120,36 @@ def render_tab_analise_time(df, df_medias_ano, anos_completos):
 
     st.subheader(f"Desempenho: {time_selecionado}")
     
-    media_ranking = df_time_original['ranking'].mean()
-    melhor_ranking = df_time_original['ranking'].min()
+    # --- [ALTERADO] ---
+    # KPIs usam a nova coluna 'colocacao_final'
+    media_colocacao = df_time_original['colocacao_final'].mean()
+    melhor_colocacao = df_time_original['colocacao_final'].min()
     
     col1_kpi, col2_kpi = st.columns(2)
-    col1_kpi.metric("Melhor Posição (no período)", f"{int(melhor_ranking)}º")
-    col2_kpi.metric("Média de Posição (quando jogou)", f"{media_ranking:.1f}º")
+    col1_kpi.metric("Melhor Colocação (no período)", f"{int(melhor_colocacao)}º")
+    col2_kpi.metric("Média de Colocação (quando jogou)", f"{media_colocacao:.1f}º")
     
     st.markdown("---")
 
-    # Gráfico 1: Evolução do Ranking
+    # Gráfico 1: Evolução da Colocação
+    # (LÓGICA DOS "BURACOS" JÁ ESTÁ AQUI - `reindex`)
     df_time_reindexado = df_time_original.set_index('Ano').reindex(anos_completos).reset_index()
     df_time_reindexado['equipe'] = time_selecionado 
 
-    st.subheader("Evolução do Ranking Ano a Ano")
+    st.subheader("Evolução da Colocação Ano a Ano")
     
     fig_rank_time = plt.figure(figsize=(10, 5))
     ax_rank = fig_rank_time.add_subplot(111)
-    sns.lineplot(data=df_time_reindexado, x='Ano', y='ranking', marker='o', lw=3, ax=ax_rank)
     
-    ax_rank.set_title(f"Posição Final de {time_selecionado} por Ano")
-    ax_rank.set_ylabel("Ranking (1 = Campeão)")
+    # Usa 'colocacao_final' no eixo Y
+    sns.lineplot(data=df_time_reindexado, x='Ano', y='colocacao_final', marker='o', lw=3, ax=ax_rank)
+    
+    ax_rank.set_title(f"Colocação Final de {time_selecionado} por Ano")
+    ax_rank.set_ylabel("Colocação Final (1 = Campeão)") # Label atualizado
     ax_rank.set_xlabel("Ano")
+    # --- [FIM DA ALTERAÇÃO] ---
+    
+    # Lógica de eixos (mantida)
     ax_rank.set_xlim(left=anos_completos.start - 0.5, right=anos_completos.stop - 1 + 0.5) 
     ax_rank.set_ylim(bottom=20.5, top=0.5) 
     ax_rank.xaxis.set_major_locator(ticker.MaxNLocator(integer=True)) 
@@ -143,7 +158,7 @@ def render_tab_analise_time(df, df_medias_ano, anos_completos):
     
     st.markdown("---")
 
-    # Gráfico 2: Comparação com a Média da Liga
+    # Gráfico 2: Comparação com a Média da Liga (sem alteração de lógica, só de texto)
     st.subheader("Comparação com a Média do Campeonato")
     
     metrica_comp = st.selectbox(

@@ -3,20 +3,24 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from .utils import COLUNAS_METRICAS, formatar_nome
 
-@st.cache_resource # Cacheia o modelo treinado para não re-treinar a cada F5
+@st.cache_resource
 def train_model(df):
     """
-    Treina um modelo de Regressão (RandomForest) para prever o 'ranking'
-    com base nas COLUNAS_METRICAS.
+    Treina um modelo para prever a 'colocacao_final'.
     """
-    # Define as features (X) e o alvo (y)
     features = COLUNAS_METRICAS
-    target = 'ranking'
     
+    # --- [ALTERADO] ---
+    target = 'colocacao_final' # Alvo da previsão atualizado
+    # --- [FIM DA ALTERAÇÃO] ---
+    
+    if target not in df.columns:
+        st.error(f"A coluna alvo '{target}' não foi encontrada para treinar o modelo.")
+        return None, None
+
     X = df[features]
     y = df[target]
     
-    # Cria e treina o modelo
     model = RandomForestRegressor(n_estimators=100, random_state=42)
     model.fit(X, y)
     
@@ -26,16 +30,15 @@ def render_tab_previsao(df, model, features):
     """
     Renderiza a aba de previsão interativa com sliders.
     """
-    st.header("🔮 Simulador de Posição no Campeonato")
-    st.markdown("Use os sliders abaixo para simular as estatísticas de um time e prever seu ranking final.")
+    # --- [ALTERADO] ---
+    st.header("🔮 Simulador de Colocação Final")
+    st.markdown("Use os sliders abaixo para simular as estatísticas de um time e prever sua colocação final.")
     st.warning("Aviso: Esta é uma previsão estatística baseada em dados de 2014-2020 e não garante resultados reais.", icon="⚠️")
     
-    # Usar 2 colunas para os sliders ficarem mais organizados
     col1, col2 = st.columns(2)
     
     input_data = {}
     
-    # Pega as estatísticas min/max/médio do DF para sliders realistas
     try:
         stats = df[features].describe().loc[['min', 'max', '50%']]
     except KeyError:
@@ -85,24 +88,28 @@ def render_tab_previsao(df, model, features):
         )
     
     # Botão para executar a predição
-    if st.button("Prever Ranking", type="primary"):
-        # Prepara os dados do slider para o modelo (garante a ordem correta)
-        data_predict = pd.DataFrame([input_data])[features] 
+    if st.button("Prever Colocação", type="primary"): # Texto do botão atualizado
         
-        # Faz a predição
+        if model is None:
+            st.error("O modelo não foi treinado. Verifique os dados.")
+            return
+            
+        data_predict = pd.DataFrame([input_data])[features] 
         prediction = model.predict(data_predict)
         
-        # Exibe o resultado com destaque
-        st.metric("Ranking Previsto", f"{prediction[0]:.0f}º")
+        st.metric("Colocação Prevista", f"{prediction[0]:.0f}º") # Texto do KPI atualizado
 
     st.markdown("---")
     st.subheader("Importância das Métricas para a Previsão")
-    st.markdown("O que o modelo mais valoriza para definir o ranking (baseado nos dados de 2014-2020)?")
+    st.markdown("O que o modelo mais valoriza para definir a colocação final (baseado nos dados de 2014-2020)?")
+    # --- [FIM DA ALTERAÇÃO] ---
     
-    # Gráfico de importância das features
-    importances = pd.DataFrame({
-        'Métrica': [formatar_nome(f) for f in features],
-        'Importância': model.feature_importances_
-    }).set_index('Métrica')
-    
-    st.bar_chart(importances.sort_values(by='Importância', ascending=False))
+    if model is not None:
+        importances = pd.DataFrame({
+            'Métrica': [formatar_nome(f) for f in features],
+            'Importância': model.feature_importances_
+        }).set_index('Métrica')
+        
+        st.bar_chart(importances.sort_values(by='Importância', ascending=False))
+    else:
+        st.warning("O modelo de previsão não está disponível.")
