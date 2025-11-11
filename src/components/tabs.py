@@ -8,7 +8,7 @@ from .utils import COLUNAS_METRICAS, formatar_nome
 
 def render_tab_tendencias(df):
     """Cria e exibe o conteúdo da Aba 1"""
-    st.header("Tendências Temporais (Evolução 2014-2020)")
+    st.header("Tendências Temporais (Evolução 2013-2020)")
     st.markdown("Como as médias do campeonato mudaram ao longo dos anos?")
 
     metricas_tendencia = st.multiselect(
@@ -56,7 +56,7 @@ def render_tab_correlacoes(df):
     sns.heatmap(
         corr_matrix, annot=True, fmt='.2f', cmap='coolwarm', linewidths=0.5
     )
-    plt.title('Matriz de Correlação entre Métricas (2014-2020)', fontsize=18)
+    plt.title('Matriz de Correlação entre Métricas (2013-2020)', fontsize=18)
     st.pyplot(fig_corr)
     
     st.markdown("""
@@ -99,7 +99,7 @@ def render_tab_correlacoes(df):
 def render_tab_analise_time(df, df_medias_ano, anos_completos):
     """Cria e exibe o conteúdo da Aba 3"""
     st.header("Análise Individual por Time")
-    st.markdown("Selecione um time para ver sua performance ao longo dos anos (2014-2020).")
+    st.markdown("Selecione um time para ver sua performance ao longo dos anos (2013-2020).")
 
     lista_times = sorted(df['equipe'].unique())
     time_selecionado = st.selectbox(

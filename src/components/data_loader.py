@@ -8,7 +8,7 @@ from .utils import COLUNAS_METRICAS
 @st.cache_data
 def carregar_e_preparar_dados(pasta_dados):
     """
-    Carrega, limpa, converte tipos e prepara os dados de 2014 a 2020.
+    Carrega, limpa, converte tipos e prepara os dados de 2013 a 2020.
     """
     try:
         script_path = os.path.abspath(__file__)

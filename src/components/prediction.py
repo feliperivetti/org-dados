@@ -33,7 +33,7 @@ def render_tab_previsao(df, model, features):
     # --- [ALTERADO] ---
     st.header("🔮 Simulador de Colocação Final")
     st.markdown("Use os sliders abaixo para simular as estatísticas de um time e prever sua colocação final.")
-    st.warning("Aviso: Esta é uma previsão estatística baseada em dados de 2014-2020 e não garante resultados reais.", icon="⚠️")
+    st.warning("Aviso: Esta é uma previsão estatística baseada em dados de 2013-2020 e não garante resultados reais.", icon="⚠️")
     
     col1, col2 = st.columns(2)
     
@@ -101,7 +101,7 @@ def render_tab_previsao(df, model, features):
 
     st.markdown("---")
     st.subheader("Importância das Métricas para a Previsão")
-    st.markdown("O que o modelo mais valoriza para definir a colocação final (baseado nos dados de 2014-2020)?")
+    st.markdown("O que o modelo mais valoriza para definir a colocação final (baseado nos dados de 2013-2020)?")
     # --- [FIM DA ALTERAÇÃO] ---
     
     if model is not None:

@@ -4,7 +4,7 @@ def render_sidebar(df):
     """Cria e exibe a barra lateral (sidebar)"""
     st.sidebar.header("Opções de Visualização")
     if st.sidebar.checkbox("Mostrar dados brutos (DataFrame)"):
-        st.sidebar.subheader("Dados Completos (2014-2020)")
+        st.sidebar.subheader("Dados Completos (2013-2020)")
         st.sidebar.dataframe(df)
 
     st.sidebar.markdown("---")
